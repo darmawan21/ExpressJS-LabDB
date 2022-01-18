@@ -2,7 +2,7 @@ const { Sequelize } = require('sequelize');
 
 const sequelize = new Sequelize('labdb', 'root', '', {
     host: 'localhost',
-    dialect: 'mariadb'
+    dialect: 'mysql'
 });
 
 try {

@@ -1,78 +1,94 @@
 var express = require('express');
 var router = express.Router();
-var Transaksi_Penunjang_Detail = require("../models/transaksi_penunjang_detail");
+const axios = require('axios')
+var JenisPenunjang = require('../models/jenis_penunjang');
+var TransaksiPenunjang = require('../models/transaksi_penunjang');
+var TransaksiPenunjangDetail = require('../models/transaksi_penunjang_detail');
 
-/* Tampil Data Transaksi Penunjang Detail. */
 router.get('/', function(req, res, next) {
-  Transaksi_Penunjang_Detail.findAndCountAll().then(data => {
-    res.json({
-      status: true,
-      pesan: "Berhasil Tampil",
-      data:data.rows,
-      count: data.count
-    });
-  }).catch(salahnya=>{
-    res.json({
-      status: false,
-      pesan: "Gagal Tampil: " + salahnya.message,
-      data:[]
-    });
-  });
+	TransaksiPenunjangDetail.findAll({raw:true}).then( async data=> {
+	
+	  await Promise.all(data.map( async (item)=>{
+		// baca Transaksi Periksa
+		const transaksi_penunjang = await TransaksiPenunjang.findByPk(item.id_transaksi_penunjang);
+	
+		// baca Jenis Penunjang
+		const jenis_penunjang = await JenisPenunjang.findByPk(item.id_jenis_penunjang);
+	
+		// update itemTampil
+		item['biaya_transaksi_penunjang'] =  transaksi_penunjang.id_transaksi_penunjang;
+		item['nama_jenis_penunjang'] = jenis_penunjang.nama;
+    	item['biaya_jenis_penunjang'] = jenis_penunjang.biaya;
+
+	  }));
+	
+	  res.json({
+		status:true,
+		pesan: "Berhasil Tampil",
+		data:data
+	  });
+	
+	}).catch ( err => {
+	  res.json({
+		status:false,
+		pesan: "Gagal tampil: " + err.message,
+		data:[]
+	  })
+	});
 });
 
-/* Tambah Data Transaksi Penunjang Detail. */
-router.post('/', function(req, res, next) {
-  Transaksi_Penunjang_Detail.create(req.body).then(data => {
-    res.json({
-      status: true,
-      pesan: "Berhasil Tambah",
-      data:data
+router.post('/',function(req,res,next){
+
+    TransaksiPenunjangDetail.create(req.body).then( data=>{
+        res.json({
+            status:true,
+            pesan:"Berhasil Tambah",
+            data:data
+        });
+    }).catch( err=>{
+        res.json({
+            status: false,
+            pesan: "Gagal Tambah: " + err.message,
+            data:[]
+        });
     });
-  }).catch(salahnya=>{
-    res.json({
-      status: false,
-      pesan: "Gagal Tambah: " + salahnya.message,
-      data:req.body
-    });
-  });
+
 });
 
-/* Ubah Data Transaksi Penunjang Detail. */
-router.put('/', function(req, res, next) {
-  Transaksi_Penunjang_Detail.update(req.body, {
-    where : {id:req.body.id}
-  }).then(data => {
-    res.json({
-      status: true,
-      pesan: "Berhasil Ubah",
-      data:data
-    });
-  }).catch(salahnya=>{
-    res.json({
-      status: false,
-      pesan: "Gagal Ubah: " + salahnya.message,
-      data:req.body
-    });
-  });
+router.put('/',function(req,res,next){
+	TransaksiPenunjangDetail.update(req.body,{
+		where:{id:req.body.id}
+	}).then( ()=>{
+		res.json({
+			status:true,
+			pesan:"Berhasil Ubah",
+			data:[]
+		});
+	}).catch( err=>{
+		res.json({
+			status: false,
+			pesan: "Gagal Ubah: " + err.message,
+			data:[]
+		});
+	});
 });
 
-/* Delete Data Transaksi Penunjang Detail. */
-router.delete('/', function(req, res, next) {
-  Transaksi_Penunjang_Detail.destroy({
-    where : {id:req.body.id}
-  }).then(data => {
-    res.json({
-      status: true,
-      pesan: "Berhasil Hapus",
-      data:data
-    });
-  }).catch(salahnya=>{
-    res.json({
-      status: false,
-      pesan: "Gagal Hapus: " + salahnya.message,
-      data:req.body
-    });
-  });
+router.delete('/',function(req,res,next){
+	TransaksiPenunjangDetail.destroy({
+		where:{id:req.body.id}
+	}).then( ()=>{
+		res.json({
+			status:true,
+			pesan:"Berhasil Hapus",
+			data:[]
+		});
+	}).catch( err=>{
+		res.json({
+			status: false,
+			pesan: "Gagal Hapus: " + err.message,
+			data:[]
+		});
+	});
 });
 
 module.exports = router;

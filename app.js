@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var cors = require('cors');
 
 var indexRouter = require('./routes/index');
 var transaksiPenunjangRouter = require('./routes/transaksi_penunjang');
@@ -10,6 +11,9 @@ var jenisPenunjangRouter = require('./routes/jenis_penunjang');
 var transaksiPenunjangDetailRouter = require('./routes/transaksi_penunjang_detail');
 
 var app = express();
+
+// cors
+app.use(cors());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
